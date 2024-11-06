@@ -41,6 +41,8 @@ go mod tidy
 
 This command will fetch all required dependencies, ensuring a smooth build process.
 
+Optional: Install the  [Github CLI](https://github.com/cli/cli#github-cli)
+
 ---
 
 ## Building the Project with GoReleaser
