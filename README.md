@@ -1,5 +1,9 @@
 # ghost
 
+![Ghost Gopher Mascot](ghostpher-sm.png)
+
+_Golang + Host Inspection = Ghost!_
+
 This project provides a suite of tools for system and network management, all packaged as a versatile CLI application built with Go and Cobra. It offers features like network scanning, system info retrieval, and more, all of which are compiled and released using GoReleaser.
 
 ---
@@ -32,7 +36,7 @@ cd ghost
 This project relies on several Go modules specified in `go.mod`. Install them with the following command:
 
 ```bash
-go mod download
+go mod tidy
 ```
 
 This command will fetch all required dependencies, ensuring a smooth build process.
