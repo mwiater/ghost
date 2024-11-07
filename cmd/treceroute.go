@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os/exec"
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/mwiater/ghost/utils"
@@ -23,9 +25,10 @@ var TracerouteCmd = &cobra.Command{
 		// Retrieve flags
 		destination := viper.GetString("destination")
 		maxHops := viper.GetInt("maxHops")
+		timeoutSec := viper.GetInt("timeout")
 
-		// Execute traceroute
-		hops, err := RunTraceroute(destination, maxHops)
+		// Execute traceroute with timeout
+		hops, err := RunTraceroute(destination, maxHops, timeoutSec)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return
@@ -44,9 +47,9 @@ type TracerouteHop struct {
 	RTTs      [3]string
 }
 
-// RunTraceroute executes the traceroute command and retrieves the hop information.
-func RunTraceroute(destination string, maxHops int) ([]TracerouteHop, error) {
-	return GetTraceroute(destination, maxHops)
+// RunTraceroute executes the traceroute command with a timeout and retrieves the hop information.
+func RunTraceroute(destination string, maxHops int, timeoutSec int) ([]TracerouteHop, error) {
+	return GetTraceroute(destination, maxHops, timeoutSec)
 }
 
 // PrintTraceroute displays the traceroute hops in a formatted table.
@@ -76,39 +79,59 @@ func init() {
 	// Define flags with default values
 	TracerouteCmd.PersistentFlags().StringP("destination", "d", "google.com", "Destination IP address or hostname for traceroute")
 	TracerouteCmd.PersistentFlags().IntP("maxHops", "m", 30, "Maximum number of hops to trace")
+	TracerouteCmd.PersistentFlags().IntP("timeout", "t", 30, "Timeout in seconds for the traceroute command")
 
 	// Bind flags to viper
 	viper.BindPFlag("destination", TracerouteCmd.PersistentFlags().Lookup("destination"))
 	viper.BindPFlag("maxHops", TracerouteCmd.PersistentFlags().Lookup("maxHops"))
+	viper.BindPFlag("timeout", TracerouteCmd.PersistentFlags().Lookup("timeout"))
 }
 
-// GetTraceroute retrieves traceroute information based on the operating system.
-func GetTraceroute(destination string, maxHops int) ([]TracerouteHop, error) {
+// GetTraceroute retrieves traceroute information based on the operating system and enforces the timeout.
+func GetTraceroute(destination string, maxHops int, timeoutSec int) ([]TracerouteHop, error) {
 	if runtime.GOOS == "windows" {
-		return getTracerouteWindows(destination, maxHops)
+		return getTracerouteWindows(destination, maxHops, timeoutSec)
 	}
-	return getTracerouteUnix(destination, maxHops)
+	return getTracerouteUnix(destination, maxHops, timeoutSec)
 }
 
 // getTracerouteUnix retrieves traceroute information on Unix-based systems (Linux, macOS).
-func getTracerouteUnix(destination string, maxHops int) ([]TracerouteHop, error) {
+func getTracerouteUnix(destination string, maxHops int, timeoutSec int) ([]TracerouteHop, error) {
 	var hops []TracerouteHop
 
-	// Check if 'traceroute' is available
+	// Determine the traceroute command based on availability
 	cmdName := "traceroute"
 	if _, err := exec.LookPath(cmdName); err != nil {
-		return nil, fmt.Errorf("'traceroute' command not found. Please install it to use this feature.")
+		// Fallback to 'tracepath' if 'traceroute' is not available
+		cmdName = "tracepath"
+		if _, err := exec.LookPath(cmdName); err != nil {
+			return nil, fmt.Errorf("neither 'traceroute' nor 'tracepath' command is available")
+		}
 	}
 
 	// Prepare the command arguments
-	args := []string{"-m", strconv.Itoa(maxHops), destination}
+	var args []string
+	if cmdName == "traceroute" {
+		args = []string{"-m", strconv.Itoa(maxHops), destination}
+	} else { // tracepath
+		args = []string{destination, "-n"} // '-n' to skip DNS resolution for faster results
+	}
 
-	cmd := exec.Command(cmdName, args...)
+	// Create a context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSec)*time.Second)
+	defer cancel()
 
-	// Capture combined output (stdout and stderr)
+	// Execute the command with context
+	cmd := exec.CommandContext(ctx, cmdName, args...)
 	output, err := cmd.CombinedOutput()
+
+	// Check if the context was canceled (timeout)
+	if ctx.Err() == context.DeadlineExceeded {
+		return hops, fmt.Errorf("traceroute command timed out after %d seconds", timeoutSec)
+	}
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute 'traceroute' command: %v", err)
+		return hops, fmt.Errorf("failed to execute '%s' command: %v", cmdName, err)
 	}
 
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
@@ -120,7 +143,7 @@ func getTracerouteUnix(destination string, maxHops int) ([]TracerouteHop, error)
 		lineNumber++
 
 		// Skip the first line which typically contains the destination info
-		if strings.HasPrefix(line, "traceroute") {
+		if strings.HasPrefix(line, "traceroute") || strings.HasPrefix(line, "tracepath") {
 			continue
 		}
 
@@ -157,9 +180,11 @@ func getTracerouteUnix(destination string, maxHops int) ([]TracerouteHop, error)
 			}
 		}
 
-		// Determine if the line contains '*' indicating a timeout
-		if strings.Contains(line, "*") || strings.Contains(line, "no reply") {
-			currentHop.RTTs = [3]string{"*", "*", "*"}
+		// Determine if the line contains 'no reply' indicating a timeout
+		if strings.Contains(line, "no reply") {
+			currentHop.RTTs[0] = "*"
+			currentHop.RTTs[1] = "*"
+			currentHop.RTTs[2] = "*"
 			continue
 		}
 
@@ -189,24 +214,38 @@ func getTracerouteUnix(destination string, maxHops int) ([]TracerouteHop, error)
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error reading traceroute output: %v", err)
+		return hops, fmt.Errorf("error reading traceroute output: %v", err)
 	}
 
 	return hops, nil
 }
 
 // getTracerouteWindows retrieves traceroute information on Windows systems.
-func getTracerouteWindows(destination string, maxHops int) ([]TracerouteHop, error) {
+func getTracerouteWindows(destination string, maxHops int, timeoutSec int) ([]TracerouteHop, error) {
 	var hops []TracerouteHop
 
 	// Windows uses 'tracert' command
 	// '/h' specifies the maximum number of hops
+	// '/w' specifies the timeout in milliseconds
 	cmd := exec.Command("tracert", "-h", strconv.Itoa(maxHops), destination)
 
-	// Capture combined output (stdout and stderr)
+	// Create a context with timeout
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSec)*time.Second)
+	defer cancel()
+
+	// Execute the command with context
+	cmd = exec.CommandContext(ctx, "tracert", "-h", strconv.Itoa(maxHops), destination)
+
+	// Capture combined output (stdout and stderr) for better debugging
 	output, err := cmd.CombinedOutput()
+
+	// Check if the context was canceled (timeout)
+	if ctx.Err() == context.DeadlineExceeded {
+		return hops, fmt.Errorf("tracert command timed out after %d seconds", timeoutSec)
+	}
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute 'tracert' command: %v", err)
+		return hops, fmt.Errorf("failed to execute 'tracert' command: %v", err)
 	}
 
 	scanner := bufio.NewScanner(strings.NewReader(string(output)))
@@ -240,41 +279,41 @@ func getTracerouteWindows(destination string, maxHops int) ([]TracerouteHop, err
 
 		// Check for timeout
 		if strings.Contains(line, "Request timed out.") {
-			hop.RTTs = [3]string{"*", "*", "*"}
+			hop.RTTs[0] = "*"
+			hop.RTTs[1] = "*"
+			hop.RTTs[2] = "*"
 			hops = append(hops, hop)
 			continue
 		}
 
 		// Extract RTTs and IP/Hostname
 		// Example line: "  2     2 ms     2 ms     2 ms  10.0.0.1"
-		if len(fields) >= 5 {
-			rtt1 := fields[1]
-			rtt2 := fields[2]
-			rtt3 := fields[3]
-			hostIP := fields[4]
+		rtt1 := fields[1]
+		rtt2 := fields[2]
+		rtt3 := fields[3]
+		hostIP := fields[4]
 
-			// Attempt to separate hostname and IP if available
-			hostname := "-"
-			ip := hostIP
-			if strings.Contains(hostIP, "(") && strings.Contains(hostIP, ")") {
-				// Hostname and IP are present
-				parts := strings.SplitN(hostIP, "(", 2)
-				hostname = strings.TrimSpace(parts[0])
-				ip = strings.TrimSuffix(strings.TrimSpace(parts[1]), ")")
-			}
-
-			hop.Hostname = hostname
-			hop.IP = ip
-			hop.RTTs[0] = strings.TrimSuffix(rtt1, "ms")
-			hop.RTTs[1] = strings.TrimSuffix(rtt2, "ms")
-			hop.RTTs[2] = strings.TrimSuffix(rtt3, "ms")
+		// Attempt to separate hostname and IP if available
+		hostname := "-"
+		ip := hostIP
+		if strings.Contains(hostIP, "(") && strings.Contains(hostIP, ")") {
+			// Hostname and IP are present
+			parts := strings.SplitN(hostIP, "(", 2)
+			hostname = strings.TrimSpace(parts[0])
+			ip = strings.TrimSuffix(strings.TrimSpace(parts[1]), ")")
 		}
+
+		hop.Hostname = hostname
+		hop.IP = ip
+		hop.RTTs[0] = strings.TrimSuffix(rtt1, "ms")
+		hop.RTTs[1] = strings.TrimSuffix(rtt2, "ms")
+		hop.RTTs[2] = strings.TrimSuffix(rtt3, "ms")
 
 		hops = append(hops, hop)
 	}
 
 	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error reading tracert output: %v", err)
+		return hops, fmt.Errorf("error reading tracert output: %v", err)
 	}
 
 	return hops, nil
@@ -289,7 +328,7 @@ func extractRTTs(line string) [3]string {
 	count := 0
 	for i := 0; i < len(parts)-1 && count < 3; i++ {
 		rtt := strings.TrimSpace(parts[i])
-		if rtt == "*" || rtt == "?" || strings.ToLower(rtt) == "no" {
+		if rtt == "*" || rtt == "?" || rtt == "no" {
 			rtts[count] = "*"
 		} else {
 			rtts[count] = rtt
