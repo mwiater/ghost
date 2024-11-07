@@ -1,10 +1,10 @@
 # Docker
 
-This is a quick example of using ghost inside of a Docker container. Not all commands work due to the inner workings of a Docker container differeing from a full-fledged OS, but there are some useful examples below. This tool does not intend to to provide full support in Docker containers, the following are examples to illustrate a different context.
+This document provides a quick example of using `ghost` inside a Docker container. While not all commands are fully supported within Docker (due to differences between Docker containers and full-fledged operating systems), there are still several useful examples provided below. Note that this tool is not designed for complete functionality within Docker containers; instead, these examples illustrate how it can be used in a different context.
 
 ## Build
 
-Assuming you are in the root of the project.
+Make sure you are in the root directory of the project.
 
 `docker build . -t mattwiater/ghost`
 

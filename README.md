@@ -6,6 +6,8 @@ _Golang + Host Inspection = Ghost!_
 
 This project provides a suite of tools for system and network management, all packaged as a versatile CLI application built with Go and Cobra. It offers features like network scanning, system info retrieval, and more, all of which are compiled and released using GoReleaser.
 
+Note: This tool is not intended as a production-grade application but rather as an illustrative example of a cross-platform utility that I find useful during development. Working across various environments, it’s practical to have a consistent set of tools for inspecting system and network states, and this project reflects that. It serves as a demonstration of what can be achieved quickly with Go for Go engineering, providing insight into foundational techniques and implementations that may benefit others building similar utilities.
+
 ---
 
 ## Table of Contents
@@ -15,6 +17,7 @@ This project provides a suite of tools for system and network management, all pa
 3. [Cobra Commands](#cobra-commands)
    - [Command List](#command-list)
    - [Command Details](#command-details)
+4. [Running in a Docker container](#running-in-docker)
 
 ---
 
@@ -714,3 +717,7 @@ Example Output:
     └── terminal.go
 
 ```
+
+## Running in Docker
+
+For instructions on using `ghost` within a Docker container, including example commands and limitations, see the [Docker Guide](./DOCKER.md).
