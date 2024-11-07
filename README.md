@@ -6,7 +6,9 @@ _Golang + Host Inspection = Ghost!_
 
 This project provides a suite of tools for system and network management, all packaged as a versatile CLI application built with Go and Cobra. It offers features like network scanning, system info retrieval, and more, all of which are compiled and released using GoReleaser.
 
-Note: This tool is not intended as a production-grade application but rather as an illustrative example of a cross-platform utility that I find useful during development. Working across various environments, it’s practical to have a consistent set of tools for inspecting system and network states, and this project reflects that. It serves as a demonstration of what can be achieved quickly with Go for Go engineering, providing insight into foundational techniques and implementations that may benefit others building similar utilities.
+**Note:** This tool is not intended as a production-grade application but rather as an illustrative example of a cross-platform utility that I find useful during development. Working across various environments, it’s practical to have a consistent set of tools for inspecting system and network states, and this project reflects that. It serves as a demonstration of what can be achieved quickly with Go for Go engineering, providing insight into foundational techniques and implementations that may benefit others building similar utilities.
+
+**Maintenence:** I will try to keep the `main` branch in a working state, but that doen't mean that all commands will be in working condition in all platforms. Sometimes, I just need to quickly write a command for a particular platform and circle back to making it cross-platform.
 
 ---
 
@@ -105,6 +107,7 @@ This project includes several commands that allow users to interact with system 
 - `find`: Searches for files or directories based on the specified parameters.
 - `fsinfo`: Displays information about the file system.
 - `getservices`: Lists active services on the system.
+- `gpuinfo`: Provides detailed GPU information.
 - `hostinfo`: Provides general information about the host.
 - `largestdirs`: Finds the largest directories.
 - `largestfiles`: Finds the largest files.
@@ -113,8 +116,10 @@ This project includes several commands that allow users to interact with system 
 - `netstat`: Shows network status and connections.
 - `networkinterfaces`: Lists all network interfaces.
 - `portscanner`: Scans for open ports on the network.
+- `routeinfo`: Displays the system's routing table.
 - `subnetcalc`: Calculates subnet information.
 - `treeprint`: Prints directory structure in a tree format.
+- `traceroute`: Performs a traceroute to a specified IP address.
 
 ---
 
@@ -313,6 +318,28 @@ Example Output:
  C:                466.61 GB    353.14 GB   113.47 GB        75.68%          
  D:                26.84 GB     3.05 GB     23.80 GB         11.34%
  G:                466.61 GB    358.82 GB   107.79 GB        76.90%   
+```
+
+---
+
+#### `gpuinfo`
+
+**Description:** Retrieves detailed information about the GPU(s) installed on the system, including model, memory, driver version, and current usage statistics.
+
+```bash
+./ghost gpuinfo
+```
+
+**Flags: None**
+
+**Example Output:**
+
+*Standard Output:*
+
+```
+ gpuinfoCmd
+ MODEL                               MEMORY  DRIVER VERSION  UTILIZATION 
+ 4293918720 31.0.21912.14 Radeon RX  0 MB    Series          0 %
 ```
 
 ---
@@ -578,6 +605,39 @@ Port Scan Results
 
 ---
 
+#### `routeinfo`
+
+**Description:** Displays the system's routing table, showing all network routes, their destinations, gateways, metrics, and associated interfaces.
+
+```bash
+./ghost routeinfo
+```
+
+**Flags: None**
+
+**Example Output:**
+
+```
+ routeCmd
+ NETWORK DESTINATION  NETMASK          GATEWAY      INTERFACE      METRIC 
+ 0.0.0.0              0.0.0.0          192.168.0.1  192.168.0.114  25     
+ 127.0.0.0            255.0.0.0        On-link      127.0.0.1      331    
+ 127.0.0.1            255.255.255.255  On-link      127.0.0.1      331    
+ 127.255.255.255      255.255.255.255  On-link      127.0.0.1      331    
+ 192.168.0.0          255.255.255.0    On-link      192.168.0.114  281    
+ 192.168.0.114        255.255.255.255  On-link      192.168.0.114  281    
+ 192.168.0.255        255.255.255.255  On-link      192.168.0.114  281    
+ 192.168.56.0         255.255.255.0    On-link      192.168.56.1   281    
+ 192.168.56.1         255.255.255.255  On-link      192.168.56.1   281    
+ 192.168.56.255       255.255.255.255  On-link      192.168.56.1   281    
+ 224.0.0.0            240.0.0.0        On-link      127.0.0.1      331    
+ 224.0.0.0            240.0.0.0        On-link      192.168.56.1   281    
+ 224.0.0.0            240.0.0.0        On-link      192.168.0.114  281    
+ 255.255.255.255      255.255.255.255  On-link      127.0.0.1      331    
+ 255.255.255.255      255.255.255.255  On-link      192.168.56.1   281    
+ 255.255.255.255      255.255.255.255  On-link      192.168.0.114  281    
+```
+
 ####  `services`
 
 **Description:** Lists active services on the system.
@@ -648,6 +708,42 @@ Example Output:
 
 ---
 
+#### `traceroute`
+
+**Description:** Executes a traceroute from the current location to a specified IP address or hostname, displaying each hop along the route with RTT (Round-Trip Time) measurements.
+
+```bash
+./ghost traceroute --destination 8.8.8.8 --maxHops 20 --timeout 30
+```
+
+**Flags:**
+- `--destination` (`-d`): Specifies the target IP address or hostname for the traceroute. Defaults to `4.4.4.4`.
+- `--maxHops` (`-m`): Sets the maximum number of hops to trace. Defaults to `30`.
+- `--timeout` (`-t`): Defines the timeout in seconds for the traceroute command. Defaults to `30`.
+
+**Example Output:**
+
+*Standard Output:*
+
+```
+ tracerouteCmd
+ HOP  HOSTNAME      IP ADDRESS       RTT1 (MS)                 RTT2 (MS)                                  RTT3 (MS)
+   1  1  (omitted)  192.168.0.1      192.168.0.1)  0.428       0.402                                      0.458
+   2  2  (omitted)  10.0.0.1         10.0.0.1)  3.841          3.831                                      3.821
+   3  3  (omitted)  96.120.60.221    96.120.60.221)  11.833    18.277                                     18.266
+   4  4  (omitted)  162.151.214.73   162.151.214.73)  19.251   19.287                                     19.277
+   5  5  (omitted)  96.216.60.61     96.216.60.61)  19.216     19.180                                     19.195
+   6  6  (omitted)  96.216.158.37    96.216.158.37)  23.433    16.678                                     10.393
+   7  7  (omitted)  68.86.93.53      68.86.93.53)  26.039      -                                          -
+   8  8  (omitted)  96.110.39.226    96.110.39.226)  26.090    25.970                                     25.959
+   9  -  *                           -                         -                                          -
+  10  10  (omitted) 108.170.255.173  108.170.255.173)  25.994  192.178.105.141 (192.178.105.141)  22.910  -
+  11  11  (omitted) 142.251.50.244   142.251.50.244)  22.573   216.239.43.121 (216.239.43.121)  24.017    142.251.55.198 (142.251.55.198)  22.519
+  12  12  (omitted) 142.251.211.238  142.251.211.238)  22.837  108.170.255.130 (108.170.255.130)  21.976  23.361
+```
+
+---
+
 ####  `treeprint`
 
 **Description:** Prints the directory structure in a tree format.
@@ -662,39 +758,46 @@ Example Output:
 Example Output:
 
 ```.
+.
 ├── .gitignore
 ├── .goreleaser.yaml
+├── DOCKER.md
+├── Dockerfile
 ├── GORELEASER.md
 ├── LICENSE
 ├── README.md
 ├── SCRIPTS.md
 ├── SETUP.md
 ├── cmd
-│   ├── arpscanner.go
+│   ├── arpscan.go
+│   ├── arpscan_linux.go
+│   ├── arpscan_windows.go
 │   ├── cpuInfo.go
-│   ├── demo.go
 │   ├── diskUsage.go
 │   ├── envVars.go
 │   ├── find.go
 │   ├── fsInfo.go
-│   ├── getServices.go
-│   ├── getServices_linux.go
-│   ├── getServices_windows.go
+│   ├── gpuInfo.go
 │   ├── hostInfo.go
 │   ├── largestDirs.go
 │   ├── largestFiles.go
-│   ├── list.go
 │   ├── localIP.go
 │   ├── loggedIn.go
 │   ├── loggedin_linux.go
 │   ├── loggedin_windows.go
+│   ├── logins.go
 │   ├── memInfo.go
 │   ├── netstat.go
 │   ├── networkInterfaces.go
 │   ├── portscanner.go
 │   ├── root.go
+│   ├── routeInfo.go
+│   ├── services.go
+│   ├── services_linux.go
+│   ├── services_windows.go
 │   ├── subnetcalc.go
 │   ├── sysinfo.go
+│   ├── treceroute.go
 │   └── treePrint.go
 ├── dist
 │   ├── artifacts.json
@@ -706,15 +809,18 @@ Example Output:
 │   ├── metadata.json
 │   └── win64
 │       └── ghost.exe
+├── ghostpher-sm.png
+├── ghostpher.png
 ├── go.mod
 ├── go.sum
 ├── main.go
+├── pullRequest.sh
 ├── release.sh
 ├── updateMain.sh
 └── utils
-    ├── packageList.go
     ├── tables.go
     └── terminal.go
+
 
 ```
 
