@@ -1,61 +1,72 @@
 # Docker
 
-This is a quick example of using ghost inside of a Docker container.
+This is a quick example of using ghost inside of a Docker container. Not all commands work due to the inner workings of a Docker container differeing from a full-fledged OS, but there are some useful examples below. This tool does not intend to to provide full support in Docker containers, the following are examples to illustrate a different context.
 
 ## Build
+
+Assuming you are in the root of the project.
 
 `docker build . -t mattwiater/ghost`
 
 ## Run
 
-```
-docker run -it --rm --name ghost \
-    --memory="512m" \
-    --cpus="1.5" \
-    mattwiater/ghost \
-    bash
-```
+`docker run -it --rm --name ghost mattwiater/ghost bash`
+
+Type: `exit` to leave the docker container and remove it.
 
 ## Interact
 
-The docker run command above will drop you into an interactive shell inside the container.
-
-`./ghost`
+`./ghost sysinfo`
 
 ```
-A versatile toolkit for network diagnostics and system information gathering, offering developers a suite of commands to scan networks, retrieve system details, and perform IP and port analyses.
+ sysInfoCmd
+ SYSTEM INFO   VALUE
+ OS            alpine 3.20.3
+ Architecture  amd64
+ Kernel        5.15.153.1-microsoft-standard-WSL2 
+ Uptime        6m12s
+ ```
 
-Usage:
-  ghost [command]
+`./ghost hostinfo`
 
-Available Commands:
-  arpscan           Scans the local network using ARP to find devices
-  completion        Generate the autocompletion script for the specified shell
-  cpuinfo           Displays detailed CPU information such as model, cores, and frequency.
-  diskusage         Displays disk usage information, including total, used, and free space.
-  envvars           Displays all environment variables.
-  find              Finds files with names containing a specified substring.
-  fsinfo            Displays filesystem information, including type, total space, and available space.
-  help              Help about any command
-  hostinfo          Delivers comprehensive host system information.
-  largestdirs       Lists the largest directories in a specified directory, sorted by size.
-  largestfiles      Lists the largest files in a specified directory, sorted by size.
-  localip           Finds an internal IPv4 address.
-  loggedin          Displays currently logged-in users.
-  meminfo           Displays memory usage statistics, including total, used, and free memory.
-  netstat           Displays active network connections on the system
-  networkinterfaces Lists all network interfaces on the host.
-  portscanner       Scans a range of ports on a specified host
-  services          Lists running services with their status and memory usage.
-  subnetcalc        Calculates network details for a given IP address and subnet (CIDR)
-  sysinfo           Displays system information such as OS, architecture, and uptime.
-  treeprint         Displays a tree-like structure of files and directories.
+ ```
+ hostInfoCmd
+ HOST INFO             VALUE
+ Hostname              251068e18f11
+ Uptime                438
+ BootTime              1730940012
+ Procs                 2
+ OS                    linux
+ Platform              alpine
+ PlatformFamily        alpine
+ PlatformVersion       3.20.3
+ KernelVersion         5.15.153.1-microsoft-standard-WSL2   
+ KernelArch            x86_64
+ VirtualizationSystem  docker
+ VirtualizationRole    guest
+ HostID                2c3fb449-0afe-41cf-a815-cd08913c3471 
+ ```
 
-Flags:
-  -h, --help   help for ghost
+`./ghost networkinterfaces`
 
-Use "ghost [command] --help" for more information about a command.
-
-```
-
-Type: `exit` to leave the docker container and remove it.
+ ```
+ networkInterfacesCmd
+ NETWORK INTERFACES  VALUE
+ Index               1
+ MTU                 65536
+ Name                lo
+ HardwareAddr
+ Flags               up
+                     loopback
+ Addrs               Addr: 127.0.0.1/8   
+ ----------
+ Index               17
+ MTU                 1500
+ Name                eth0
+ HardwareAddr        02:42:ac:11:00:02   
+ Flags               up
+                     broadcast
+                     multicast
+ Addrs               Addr: 172.17.0.2/16 
+ ----------
+ ```
