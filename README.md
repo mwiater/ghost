@@ -10,6 +10,8 @@ This project provides a suite of tools for system and network management, all pa
 
 **Maintenence:** I will try to keep the `main` branch in a working state, but that doen't mean that all commands will be in working condition in all platforms. Sometimes, I just need to quickly write a command for a particular platform and circle back to making it cross-platform.
 
+**Reference:** Companion article on [Level Up Coding](https://levelup.gitconnected.com/building-ghost-exploring-command-loading-patterns-and-goreleaser-in-a-personal-go-project-9706847445f3)
+
 ---
 
 ## Table of Contents
