@@ -105,6 +105,31 @@ The `builds` section defines specific build configurations for each target platf
 
 ---
 
+#### UPX: Enable binary compression
+
+```yaml
+upx:
+  - enabled: true
+    compress: best
+    lzma: true
+```
+
+You must install UPX on your host platform for this to work. See: https://github.com/alegrey91/go-upx
+
+It's worth installing, there can be significant reductions in binary size:
+
+```
+• upx
+    • packed                                         before=7.434MB after=2.227MB ratio=29% binary=dist/win64/ghost.exe
+    • packed                                         before=7.078MB after=1.926MB ratio=27% binary=dist/linuxarm64/ghost
+    • packed                                         before=7.234MB after=2.21MB ratio=30% binary=dist/linux64/ghost
+    • took: 21s
+```
+
+---
+
+
+
 ## Building the Project
 
 To build the project with GoReleaser, use the following command:
@@ -116,6 +141,39 @@ goreleaser release --snapshot --clean --skip archive
 - **`--snapshot`**: Creates a snapshot release, suitable for local testing.
 - **`--clean`**: Cleans the build environment before starting.
 - **`--skip-archive`**: Skips the archive creation step, producing only the uncompressed binaries in the `dist/` directory.
+
+```
+  • skipping announce, archive, publish and validate...
+  • cleaning distribution directory
+  • loading environment variables
+  • getting and validating git state
+    • git state                                      commit=d99dca23c32c4b987e44382198b8771ae5a7aa02 branch=development current_tag=v20241111171704 previous_tag=v20241107101326 dirty=true
+    • pipe skipped                                   reason=disabled during snapshot mode
+  • parsing tag
+  • setting defaults
+  • snapshotting
+    • building snapshot...                           version=20241111171704-SNAPSHOT-d99dca2
+  • running before hooks
+    • running                                        hook=go mod tidy
+  • ensuring distribution directory
+  • setting up metadata
+  • writing release metadata
+  • loading go mod information
+  • build prerequisites
+  • building binaries
+    • building                                       binary=dist\linuxarm64\ghost
+    • building                                       binary=dist\linux64\ghost
+    • building                                       binary=dist\win64\ghost.exe
+  • upx
+    • packed                                         before=7.434MB after=2.227MB ratio=29% binary=dist/win64/ghost.exe
+    • packed                                         before=7.078MB after=1.926MB ratio=27% binary=dist/linuxarm64/ghost
+    • packed                                         before=7.234MB after=2.21MB ratio=30% binary=dist/linux64/ghost
+    • took: 21s
+  • calculating checksums
+  • writing artifacts metadata
+  • release succeeded after 38s
+  • thanks for using goreleaser!
+```
 
 ### Expected Output
 

@@ -38,3 +38,7 @@ builds:
       - arm64
     binary: linuxarm64/ghost
     no_unique_dist_dir: true
+upx:
+  - enabled: true
+    compress: best
+    lzma: true
