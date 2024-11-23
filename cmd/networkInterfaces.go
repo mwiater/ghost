@@ -7,7 +7,7 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/mwiater/ghost/utils"
-	gopsutilNet "github.com/shirou/gopsutil/net"
+	gopsutilNet "github.com/shirou/gopsutil/v4/net"
 	"github.com/spf13/cobra"
 )
 

@@ -4,7 +4,7 @@
 package cmd
 
 import (
-	"github.com/shirou/gopsutil/host"
+	"github.com/shirou/gopsutil/v4/host"
 )
 
 // GetLoggedInUsers retrieves the currently logged-in users on Unix-based systems.
