@@ -8,17 +8,19 @@ require (
 	github.com/jedib0t/go-pretty/v6 v6.6.1
 	github.com/mdlayher/arp v0.0.0-20220512170110-6706a2966875
 	github.com/schollz/progressbar/v3 v3.16.1
-	github.com/shirou/gopsutil v3.21.11+incompatible
+	github.com/shirou/gopsutil/v4 v4.24.10
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 )
 
 require (
+	github.com/ebitengine/purego v0.8.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/native v1.0.0 // indirect
+	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/mdlayher/ethernet v0.0.0-20220221185849-529eae5b6118 // indirect
@@ -27,6 +29,7 @@ require (
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
+	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect

@@ -6,7 +6,7 @@ import (
 
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/mwiater/ghost/utils"
-	"github.com/shirou/gopsutil/net"
+	"github.com/shirou/gopsutil/v4/net"
 	"github.com/spf13/cobra"
 )
 
