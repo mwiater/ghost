@@ -1,1 +1,1 @@
-{"project_name":"ghost","tag":"v20241111171704","previous_tag":"v20241107101326","version":"20241111171704-SNAPSHOT-2a6aba4","commit":"2a6aba43af05d5d6f0d2eb5692a481848984317d","date":"2024-11-11T17:31:40.9598825-08:00","runtime":{"goos":"windows","goarch":"amd64"}}
+{"project_name":"ghost","tag":"v20241105175536","previous_tag":"","version":"20241105175536-SNAPSHOT-e576a68","commit":"e576a683b87a152de2c22df002860746091b08ea","date":"2024-11-26T09:11:29.555060686-08:00","runtime":{"goos":"linux","goarch":"amd64"}}
