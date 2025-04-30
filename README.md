@@ -108,7 +108,7 @@ This command:
   • writing artifacts metadata
   • release succeeded after 38s
   • thanks for using goreleaser!
-```s
+```
 
 For this example application and configuration, this command builds the following files:
 
